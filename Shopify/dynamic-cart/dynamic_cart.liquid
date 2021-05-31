@@ -1,0 +1,188 @@
+<div id="cart-popup" class="cart-pop-wraper">
+  <div class="cart-pop">
+    <div class="cart-pop__head">
+      <h2 class="cart-pop__heading">Confirm & Pay</h2>
+      
+      <div class="cart-count">
+        <span class="amount">{{cart.items_count}}</span>
+
+        Items
+      </div>
+      <button class="cart-pop__close close-pop" aria-label="{{ 'general.accessibility.close_modal' | t }}" data-cart-pop-close>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.0502 1.94995L1.9502 18.05" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M1.9498 1.94995L18.0498 18.05" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>          
+      </button>
+    </div>
+    <hr>
+    <div class="cart-pop__items">
+      
+    </div>
+    
+    <hr>
+    <div class="shipping-box box">
+      <div class="item">
+        <div class="title">
+          Subtotal
+        </div>
+        <div class="amount">€<span class="subtotal">{{cart.items_subtotal_price | times: 0.01}}</span></div>
+      </div>
+      
+    </div>
+    <hr>
+    <div class="total-box box">
+      <div class="item">
+        <div class="title">
+          Total (excluding tax)
+        </div>
+        <div class="amount">
+          €<span class="total subtotal">{{cart.total_price | times: 0.01}}</span>
+        </div>
+      </div>
+      
+    </div>
+    <div class="free-shipping-message">
+      <img src="https://cdn.shopify.com/s/files/1/0562/0144/5556/files/lock.svg?v=1619710900" alt="">
+      <div class="message">
+        Free shipping Unlocked
+      </div>
+    </div>
+    <a href="/checkout" class="cart-pop__cta btn">
+      Add To Cart
+    </a>
+
+    <div class="cart-pop__dismiss close-pop">
+        {{ 'cart.general.continue_shopping' | t }}
+    </div>
+  </div>
+</div>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const cartPopup = document.querySelector('#cart-popup');
+    const closeBtns = cartPopup.querySelectorAll('.close-pop');
+    const openTrigger = document.querySelector('.open_cart')
+    const openCartPopup = () => {
+      cartPopup.style.display = 'block';
+    }
+    const closeCartPopup = () => {
+      cartPopup.style.display = 'none';
+    }
+
+    const changeCart = (id, quantity, action) => {
+      let newQuantity = Number(quantity);
+
+      switch(action){
+        case 'inc': 
+        
+          newQuantity += 1;
+          break
+        
+        case 'dec': 
+          newQuantity -= 1;
+          break
+        
+        case 'remove': 
+          newQuantity = 0;
+          break
+      }
+      const data = {
+        id,
+        quantity: newQuantity
+      }
+
+      fetch('/cart/change.js',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      }).then(() => {
+        loadCart()
+      })
+    }
+
+    const initPopup = data => {
+
+      cartPopup.querySelector('.cart-count .amount').innerText = data.item_count;
+      const itemsWrap = cartPopup.querySelector('.cart-pop__items');
+      itemsWrap.innerHTML = '';
+      for(item of data.items ){
+        const itemEl = 
+          `
+          <div class="cart-pop-item">
+            <div class="cart-pop-item__image" style="background-image: url(${item.featured_image.url});"></div>
+            <div class="cart-popup-item__description">
+      
+                <h3 class="cart-pop-item__title">Hugi Gloves</h3>
+                <div class="price">
+                  €${item.final_price / 100}
+                </div>
+                
+              
+            </div>
+            <div class="cart-pop-item__quantity">
+              
+              <div class="cart-pop-item__quantity">
+              <div class="quantity-selector">
+                <div class="quantity">${item.quantity}</div>
+                <button data-item_id="${item.id}" data-item_quantity="${item.quantity}" data-action="inc" class="quantity-inc change"></button>
+                <button data-item_id="${item.id}" data-item_quantity="${item.quantity}"  data-action="dec" class="quantity-dec change"></button>
+              </div>
+
+            </div>
+            </div>
+            <button class="cart-pop-item__remove change" data-item_id="${item.id}" data-item_quantity="${item.quantity}" data-action="remove" ><svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18.0502 1.94995L1.9502 18.05" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M1.9498 1.94995L18.0498 18.05" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg> </button>
+          </div>
+          `;
+          itemsWrap.innerHTML += itemEl;
+        
+
+      }
+      
+      const subtotalFields = cartPopup.querySelectorAll('.subtotal');
+
+      for(field of subtotalFields){
+        field.innerText = data.total_price / 100
+      }
+      
+      const changeBtns = cartPopup.getElementsByClassName('change');
+      for(btn of changeBtns){
+        btn.addEventListener('click', function(){
+          const quantity = this.dataset['item_quantity'];
+          const action = this.dataset['action'];
+          const id = this.dataset['item_id'];
+          changeCart(id, quantity, action)
+        })
+      }
+      
+      openCartPopup();
+    }
+
+    const loadCart = () => {
+      fetch('/cart.js')
+      .then(response => response.json())
+      .then(data => initPopup(data))
+      .catch(error => {
+        //window.location.href = '/cart'
+      })
+    }
+    for(btn of closeBtns){
+      btn.onclick = () =>{
+        closeCartPopup();
+      }
+    }
+   
+    openTrigger.onclick = (e) => {
+      e.preventDefault()
+      loadCart()
+    }
+  })
+  
+</script>
+

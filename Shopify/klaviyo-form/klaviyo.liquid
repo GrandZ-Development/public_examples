@@ -1,0 +1,31 @@
+<div class="form-wrap">
+  <form id="footer_signup" class="klaviyo_gdpr_embed_LFTFMp" data-ajax-submit="//manage.kmail-lists.com/ajax/subscriptions/subscribe" method="GET" target="_blank" novalidate="novalidate">
+    <input type="hidden" name="g" value="LFTFMp ">
+    <input type="hidden" name="$fields" value="$consent">
+    <input type="hidden" name="$list_fields" value="$consent">
+    <div class="klaviyo_field_group">
+      <input class="" type="email" value="" name="email" id="k_id_email" placeholder="{{section.settings.email_placeholder}}" />
+      
+    </div>
+    
+    <div class="klaviyo_messages">
+      <div class="success_message" style="display:none;"></div>
+      <div class="error_message" style="display:none;"></div>
+    </div>
+    <div class="klaviyo_form_actions">
+      <button type="submit" class="klaviyo_submit_button">{{section.settings.submit_text}}</button>
+    </div>
+  </form>
+</div>
+<script type="text/javascript" src="//www.klaviyo.com/media/js/public/klaviyo_subscribe.js"></script>
+<script>
+  KlaviyoSubscribe.attachToForms('#footer_signup', {
+    hide_form_on_success: true,
+    extra_properties: {
+      $source: '$embed',
+      $method_type: "Klaviyo Form",
+      $method_id: 'embed',
+      $consent_version: 'Embed default text'
+    }
+  });
+</script>

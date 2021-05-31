@@ -1,0 +1,101 @@
+{%- comment -%}
+
+This snippet renders a translated metafield, if there is a translation.
+Be sure you are using it on a proper type of metafield.
+
+Arguments:
+- metafield_object
+  JSON Object with translation. It should an object with locales. En is required, others are optional.
+  Example:
+  {
+    "en": {
+      "somedata": "data",
+      "somearray": [
+        "1en",
+        "2en"
+      ]
+    },
+    "nl": {
+      "somedata": "datanl",
+      "somearray": [
+        "1nl",
+        "2nl"
+      ]
+    }
+  }
+
+- property_path
+  A string that matches the path to the property. Index values should be scoped inside "[ ]". Do not set if you need the data right after the language.
+  Example:
+  'somearray.[1]' = 2en \ 2nl
+  'somedata' = data \ datanl
+
+Additional notes:
+- If you are using this snippet inside a loop, you should loop through 'en' and pass the iterator with the full object, not the english one.
+  Example:
+  {%- for tag in world.metafields.custom_fields["world_tags"].en -%}
+    {%- capture path -%}[{{forloop.index | minus: 1}}]{%- endcapture -%}
+    <div>{%- render 'metafield-translated', metafield_object: world.metafields.custom_fields["world_tags"], property_path: path -%}</div>
+  {%- endfor -%}
+
+{%- endcomment -%}
+{%- capture output -%}
+{%- if property_path -%}
+  {%- assign path_array = property_path | split: '.' -%}
+  {%- if shop.locale == 'en' -%}
+    {%- assign data = metafield_object['en'] -%}
+    {%- for path in path_array -%}
+      {%- if path contains '[' -%}
+        {%- assign path_value = path | replace: '[', '' | replace: ']', '' | plus: 0 -%}
+      {%- else -%}
+        {%- assign path_value = path -%}
+      {%- endif -%}
+      {%- if data[path_value] -%}
+        {%- assign data = data[path_value] -%}
+      {%- else -%}
+        {%- assign data = 'ERROR' -%}
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {{- data -}}
+  {%- else -%}
+    {%- assign data = metafield_object['en'] -%}
+    {%- for path in path_array -%}
+      {%- if path contains '[' -%}
+        {%- assign path_value = path | replace: '[', '' | replace: ']', '' | plus: 0 -%}
+      {%- else -%}
+        {%- assign path_value = path -%}
+      {%- endif -%}
+      {%- if data[path_value] -%}
+        {%- assign data = data[path_value] -%}
+      {%- else -%}
+        {%- assign data = 'ERROR' -%}
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- assign translatedData = metafield_object[shop.locale] -%}
+    {%- for path in path_array -%}
+      {%- if path contains '[' -%}
+        {%- assign path_value = path | replace: '[', '' | replace: ']', '' | plus: 0 -%}
+      {%- else -%}
+        {%- assign path_value = path -%}
+      {%- endif -%}
+      {%- if translatedData[path_value] -%}
+        {%- assign translatedData = translatedData[path_value] -%}
+      {%- else -%}
+        {%- assign translatedData = 'ERROR' -%}
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- if translatedData == 'ERROR' -%}
+      {{ data }}
+    {%- else -%}
+      {{- translatedData -}}
+    {%- endif -%}
+  {%- endif -%}
+{%- else -%}
+  {{ metafield_object[shop.locale] }}
+{%- endif -%}
+{%- endcapture -%}
+{%- assign output = output | strip_newlines -%}
+{{- output -}}

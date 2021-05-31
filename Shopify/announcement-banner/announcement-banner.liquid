@@ -1,0 +1,88 @@
+{%- comment -%} Check if announcement banner is enabled in theme settings {%- endcomment -%}
+{% if section.settings.announcement_enable %}
+
+   {%- comment -%} Prevent display of empty announcement banner {%- endcomment -%}
+   {% unless section.settings.announcement_text == blank %}
+   
+      {%- comment -%} Prepare background and text colors {%- endcomment -%}
+      {%- capture styles -%}
+         background: {{ section.settings.announcement_background_color }};
+         color: {{ section.settings.announcement_text_color }};
+      {%- endcapture -%}
+      <div class="announcement" style="{{ styles }}">
+         <a href="{{ section.settings.announcement_link }}">
+            <div class="container">
+               <div class="announcement__content">
+                  <div class="announcement__content-text">
+                     {{ section.settings.announcement_text }}
+                  </div>
+                  {%- comment -%} Check if button is enabled and contains any text {%- endcomment -%}
+                  {% if section.settings.announcement_button_enable and section.settings.announcement_button_text != blank %}
+                     <div class="announcement__content-button">{{ section.settings.announcement_button_text }}</div>
+                  {% endif %}
+               </div>
+            </div>
+         </a>
+      </div>
+   {% endunless %}
+{% endif %}
+
+{% schema %}
+{
+  "name": "Announcement banner",
+  "settings": [
+      {
+         "type": "header",
+         "content": "General"
+      },
+      {
+         "type": "checkbox",
+         "id": "announcement_enable",
+         "label": "Show announcement",
+         "default": false
+      },
+      {
+         "type": "text",
+         "id": "announcement_text",
+         "label": "Text"
+      },
+      {
+         "type": "url",
+         "id": "announcement_link",
+         "label": "Link"
+      },
+      {
+         "type": "header",
+         "content": "Button"
+      },
+      {
+         "type": "checkbox",
+         "id": "announcement_button_enable",
+         "label": "Show button",
+         "default": true
+      },
+      {
+         "type": "text",
+         "id": "announcement_button_text",
+         "label": "Button text",
+         "default": "Shop now"
+      },
+      {
+         "type": "header",
+         "content": "Colors"
+      },
+      {
+         "type": "color",
+         "id": "announcement_background_color",
+         "label": "Background",
+         "default": "#000000"
+      },
+      {
+         "type": "color",
+         "id": "announcement_text_color",
+         "label": "Text",
+         "default": "#ffffff"
+      }
+  ]
+}
+{% endschema %}
